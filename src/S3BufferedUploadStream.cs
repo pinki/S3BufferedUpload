@@ -9,7 +9,7 @@ using Amazon.S3.Model;
 
 namespace S3BufferedUploads;
 
-public class S3BufferedUploadStream : Stream, IDisposable
+public class S3BufferedUploadStream : Stream
 {
     public enum StateType {
         Uninitiated,
@@ -43,6 +43,7 @@ public class S3BufferedUploadStream : Stream, IDisposable
 
     protected internal readonly SemaphoreLocker _locker = new();
     protected internal CancellationTokenSource _cancellation = new();
+    private bool _disposed;
 
     public StateType State { protected internal set; get; } = StateType.Uninitiated;
     public bool IsEncrypting { protected internal set; get; }
@@ -97,13 +98,25 @@ public class S3BufferedUploadStream : Stream, IDisposable
         _minSendTheshold = minSendThreshold;
     }
 
-    /// <summary>
-    /// Triggers a complete upload operation (if upload in progress)
-    /// </summary>
-    void IDisposable.Dispose()
+    /// <inheritdoc/>
+    protected override void Dispose(bool disposing)
     {
-        Cleanup();
-        GC.SuppressFinalize(this);
+        if (_disposed) return;
+        _disposed = true;
+
+        // Flush();
+        // No Cleanup(), because Stream base class's Dispose method calls Close()
+
+        if (disposing)
+        {
+            _s3Client?.Dispose();
+            _readBuffer?.Dispose();
+            _cancellation?.Dispose();
+        }
+
+        _initiateResponse = null;
+        _completeResponse = null;
+        _abortResponse = null;
     }
 
     /// <summary>
@@ -364,7 +377,7 @@ public class S3BufferedUploadStream : Stream, IDisposable
     {
         _initiateResponse = response;
         State = StateType.Uploading;
-        IsEncrypting = (_initiateResponse.ServerSideEncryptionMethod != null 
+        IsEncrypting = (_initiateResponse.ServerSideEncryptionMethod != null
             && _initiateResponse.ServerSideEncryptionMethod.Value != ServerSideEncryptionMethod.None);
         Initiated?.Invoke(this, _initiateResponse);
     }
@@ -411,43 +424,36 @@ public class S3BufferedUploadStream : Stream, IDisposable
     /// </summary>
     public override long Length => _bytesUploaded;
 
-    /// <summary>
-    /// This stream type does not support the Position property
-    /// </summary>
-    public override long Position { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+    /// <inheritdoc/>
+    /// <remarks>This stream type does not support the Position property</remarks>
+    /// <exception cref="NotSupportedException">This stream type does not support the Position property</exception>
+    public override long Position
+    {
+        get => throw new NotSupportedException("This stream type does not support the Position property");
+        set => throw new NotSupportedException("This stream type does not support the Position property");
+    }
 
-    /// <summary>
-    /// This stream type does not support Read operations
-    /// </summary>
-    /// <param name="buffer"></param>
-    /// <param name="offset"></param>
-    /// <param name="count"></param>
-    /// <returns></returns>
-    /// <exception cref="NotImplementedException"></exception>
+    /// <inheritdoc/>
+    /// <remarks>This stream type does not support Read operations</remarks>
+    /// <exception cref="NotSupportedException">This stream type does not support Read operations</exception>
     public override int Read(byte[] buffer, int offset, int count)
     {
-        throw new NotImplementedException();
+        throw new NotSupportedException("This stream type does not support Read operations");
     }
 
-    /// <summary>
-    /// This stream type does not support Seek operations
-    /// </summary>
-    /// <param name="offset"></param>
-    /// <param name="origin"></param>
-    /// <returns></returns>
-    /// <exception cref="NotImplementedException"></exception>
+    /// <inheritdoc/>
+    /// <remarks>This stream type does not support Seek operations</remarks>
+    /// <exception cref="NotSupportedException">This stream type does not support Seek operations</exception>
     public override long Seek(long offset, SeekOrigin origin)
     {
-        throw new NotImplementedException();
+        throw new NotSupportedException("This stream type does not support Seek operations");
     }
 
-    /// <summary>
-    /// This stream type does not support SetLength operations
-    /// </summary>
-    /// <param name="value"></param>
-    /// <exception cref="NotImplementedException"></exception>
+    /// <inheritdoc/>
+    /// <remarks>This stream type does not support SetLength operations</remarks>
+    /// <exception cref="NotSupportedException">This stream type does not support SetLength operations</exception>
     public override void SetLength(long value)
     {
-        throw new NotImplementedException();
+        throw new NotSupportedException("This stream type does not support SetLength operations");
     }
 }

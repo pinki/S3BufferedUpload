@@ -231,7 +231,6 @@ public class TransferUtilityBufferedUploadTests
 
     private void SetupMockedS3BufferedStream(bool markAsComplete = true)
     {
-        var foo = new AmazonS3Client();
         var FinishSetup = (IAmazonS3 s3Client, InitiateMultipartUploadRequest request, int bufferCapacity, int minSendThreshold) =>
         {
             _mockedStream = new Mock<S3BufferedUploadStream>(s3Client, request,
@@ -289,4 +288,3 @@ public class TransferUtilityBufferedUploadTests
     }
 
 }
-
