@@ -1,7 +1,7 @@
-namespace S3BufferedUploads;
-
 using Amazon.S3;
 using Amazon.S3.Model;
+
+namespace S3BufferedUploads;
 
 /// <summary>
 /// Factory for generating S3BufferedUploadStream objects
@@ -23,7 +23,7 @@ public class S3BufferedUploadStreamFactory: IS3BufferedUploadStreamFactory
     /// <param name="minSendThreshold"></param>
     /// <returns>S3BufferedUploadStream</returns>
     public S3BufferedUploadStream Create(IAmazonS3 s3Client, string bucketName, string key,
-        int bufferCapacity = S3BufferedUploadStream.DEFAULT_READ_BUFFER_CAPACITY, 
+        int bufferCapacity = S3BufferedUploadStream.DEFAULT_READ_BUFFER_CAPACITY,
         int minSendThreshold = S3BufferedUploadStream.DEFAULT_MIN_SEND_THRESHOLD)
     {
         return new S3BufferedUploadStream(s3Client, bucketName, key, bufferCapacity, minSendThreshold);
@@ -38,7 +38,7 @@ public class S3BufferedUploadStreamFactory: IS3BufferedUploadStreamFactory
     /// <param name="minSendThreshold"></param>
     /// <returns></returns>
     public S3BufferedUploadStream Create(IAmazonS3 s3Client, InitiateMultipartUploadRequest request,
-        int bufferCapacity = S3BufferedUploadStream.DEFAULT_READ_BUFFER_CAPACITY, 
+        int bufferCapacity = S3BufferedUploadStream.DEFAULT_READ_BUFFER_CAPACITY,
         int minSendThreshold = S3BufferedUploadStream.DEFAULT_MIN_SEND_THRESHOLD)
     {
         return new S3BufferedUploadStream(s3Client, request, bufferCapacity, minSendThreshold);

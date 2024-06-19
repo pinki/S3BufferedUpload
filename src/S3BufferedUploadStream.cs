@@ -9,6 +9,9 @@ using Amazon.S3.Model;
 
 namespace S3BufferedUploads;
 
+/// <summary>
+/// S3 buffered upload stream
+/// </summary>
 public class S3BufferedUploadStream : Stream
 {
     public enum StateType {
@@ -30,8 +33,8 @@ public class S3BufferedUploadStream : Stream
 
     protected internal IAmazonS3 _s3Client;
     protected internal InitiateMultipartUploadRequest _initMultipartRequest;
-    protected internal Int32 _minSendTheshold;
-    protected internal Int32 _s3PartNumber = 1;
+    protected internal int _minSendTheshold;
+    protected internal int _s3PartNumber = 1;
     protected internal long _bytesUploaded;
 
     protected internal MemoryStream _readBuffer = new();
@@ -43,9 +46,23 @@ public class S3BufferedUploadStream : Stream
 
     protected internal readonly SemaphoreLocker _locker = new();
     protected internal CancellationTokenSource _cancellation = new();
+
     private bool _disposed;
 
+    /// <summary>
+    /// State
+    /// </summary>
+    /// <value>Current state</value>
+    /// <remarks>Default: <see cref="StateType,Uninitiated"/></remarks>
     public StateType State { protected internal set; get; } = StateType.Uninitiated;
+
+    /// <summary>
+    /// Returns whether the stream is encrypting
+    /// </summary>
+    /// <value>
+    /// <c>true</c> if encrypting;
+    /// otherwise <c>false</c>
+    /// </value>
     public bool IsEncrypting { protected internal set; get; }
 
     /// <summary>

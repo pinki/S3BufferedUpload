@@ -27,7 +27,7 @@ public class SemaphoreLockerTests
         Assert.Catch<ArgumentException>(() =>
         {
             new SemaphoreLocker(-1);
-        }, "Semaphore timeout must be greater than zero");
+        }, "Semaphore timeout must be greater than zero", "semaphoreTimeout");
     }
 
     [Test]
